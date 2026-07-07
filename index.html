@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raffaele Tracker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { color: #bb86fc; }
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .date-header {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #cf6679;
+    }
+    .counter-box {
+      margin: 20px 0;
+      padding: 15px;
+      background: #2c2c2c;
+      border-radius: 8px;
+    }
+    .count {
+      font-size: 3rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    button {
+      background-color: #03dac6;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+    }
+    button:active { background-color: #018786; transform: scale(0.95); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Raffaele Tracker 🗣️</h1>
+    <div class="date-header" id="dateDisplay">Caricamento giorno...</div>
+
+    <div class="counter-box">
+      <h2>"Aura"</h2>
+      <div class="count" id="auraCount">0</div>
+      <button onclick="addCount('aura')">+1 Aura</button>
+    </div>
+
+    <div class="counter-box">
+      <h2>"That's it"</h2>
+      <div class="count" id="thatsItCount">0</div>
+      <button onclick="addCount('thatsIt')">+1 That's it</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // 🔴 INSERISCI QUI I DATI DEL TUO PROGETTO FIREBASE 🔴
+    const firebaseConfig = {
+      apiKey: "LA_TUA_API_KEY",
+      authDomain: "IL_TUO_PROGETTO.firebaseapp.com",
+      databaseURL: "https://IL_TUO_PROGETTO-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "IL_TUO_PROGETTO",
+      storageBucket: "IL_TUO_PROGETTO.appspot.com",
+      messagingSenderId: "ID",
+      appId: "APP_ID"
+    };
+
+    // Inizializza Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Calcola il giorno corrente (Formato: YYYY-MM-DD)
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0]; 
+    document.getElementById("dateDisplay").innerText = "Giorno: " + dateString;
+
+    // Riferimento al database per il giorno di oggi
+    const todayRef = ref(db, 'giorni/' + dateString);
+
+    // Ascolta i cambiamenti in tempo reale (così si aggiorna a tutti!)
+    onValue(todayRef, (snapshot) => {
+      const data = snapshot.val() || { aura: 0, thatsIt: 0 };
+      document.getElementById("auraCount").innerText = data.aura || 0;
+      document.getElementById("thatsItCount").innerText = data.thatsIt || 0;
+    });
+
+    // Funzione per aggiungere +1
+    window.addCount = function(word) {
+      const updates = {};
+      updates[word] = increment(1);
+      update(todayRef, updates);
+    };
+  </script>
+
+</body>
+</html>
